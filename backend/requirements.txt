@@ -1,5 +1,11 @@
-fastapi
-uvicorn[standard]
 openai
-python-dotenv
-pydantic
+fastapi==0.111.0
+uvicorn[standard]==0.30.0
+SQLAlchemy==2.0.32
+psycopg[binary]>=3.2.9,<3.3
+alembic==1.13.2
+python-dotenv==1.0.1
+pydantic==2.8.2
+pydantic-settings==2.4.0
+passlib[bcrypt]==1.7.4
+email-validator==2.2.0

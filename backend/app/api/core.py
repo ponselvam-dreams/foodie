@@ -1,32 +1,12 @@
-# app.py
-import os, base64, json
+import base64
 from typing import List, Optional
-from fastapi import FastAPI, UploadFile, File, Form
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi import APIRouter, UploadFile, File, Form
 from pydantic import BaseModel
-from openai import OpenAI
-from dotenv import load_dotenv
-from community_api import router as community_router
+from app.services.ai_service import get_openai_client
 
-# Load env variables
-load_dotenv()
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+router = APIRouter(prefix="", tags=["Core AI"])
 
-# OpenAI client
-client = OpenAI(api_key=OPENAI_API_KEY)
-
-app = FastAPI(title="FoodieAI Backend", version="1.1")
-
-# Enable frontend calls
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-# ---------- Types ----------
+# ---------- Schemas ----------
 class SuggestionIn(BaseModel):
     mood: str
     ingredients: List[str] = []
@@ -49,22 +29,9 @@ class ReviewIn(BaseModel):
     rating: int
     review: str
 
-class CommunityPostIn(BaseModel):
-    title: str
-    ingredients: List[str]
-    steps: List[str]
-    video_url: Optional[str] = None
-    author: str
-
-
-@app.get("/")
-def root():
-    return {"message": "Backend is running with AI Chef 🍳"}
-
-
-# ---------- /suggest ----------
-@app.post("/suggest")
+@router.post("/suggest")
 def suggest(payload: SuggestionIn):
+    client = get_openai_client()
     mood = payload.mood
     ingredients = ", ".join(payload.ingredients) if payload.ingredients else "any ingredients"
 
@@ -85,14 +52,14 @@ def suggest(payload: SuggestionIn):
         )
         content = resp.choices[0].message.content.strip("` \n")
         if content.startswith("json"): content = content[4:].strip()
+        import json
         return json.loads(content)
     except Exception as e:
         return {"error": str(e)}
 
-
-# ---------- /detect ----------
-@app.post("/detect")
+@router.post("/detect")
 async def detect(file: UploadFile = File(...), mood: str = Form("Happy")):
+    client = get_openai_client()
     raw = await file.read()
     b64 = base64.b64encode(raw).decode("utf-8")
     data_url = f"data:{file.content_type or 'image/jpeg'};base64,{b64}"
@@ -120,14 +87,14 @@ async def detect(file: UploadFile = File(...), mood: str = Form("Happy")):
         )
         content = resp.choices[0].message.content.strip("` \n")
         if content.startswith("json"): content = content[4:].strip()
+        import json
         return {"mood": mood, **json.loads(content)}
     except Exception as e:
         return {"error": str(e)}
 
-
-# ---------- /substitute ----------
-@app.post("/substitute")
+@router.post("/substitute")
 def substitute(payload: SubstituteIn):
+    client = get_openai_client()
     ingredient = payload.ingredient
     diet = payload.diet or "general"
     system_prompt = (
@@ -142,14 +109,14 @@ def substitute(payload: SubstituteIn):
         )
         content = resp.choices[0].message.content.strip("` \n")
         if content.startswith("json"): content = content[4:].strip()
+        import json
         return json.loads(content)
     except Exception as e:
         return {"error": str(e)}
 
-
-# ---------- /mealplan ----------
-@app.post("/mealplan")
+@router.post("/mealplan")
 def mealplan(payload: MealPlanIn):
+    client = get_openai_client()
     system_prompt = (
         f"Create a weekly meal plan for {payload.diet} diet. "
         f"Calories: {payload.calories} per day. {payload.meals_per_day} meals/day. "
@@ -162,14 +129,14 @@ def mealplan(payload: MealPlanIn):
         )
         content = resp.choices[0].message.content.strip("` \n")
         if content.startswith("json"): content = content[4:].strip()
+        import json
         return json.loads(content)
     except Exception as e:
         return {"error": str(e)}
 
-
-# ---------- /nutrition ----------
-@app.post("/nutrition")
+@router.post("/nutrition")
 def nutrition(payload: NutritionIn):
+    client = get_openai_client()
     items = ", ".join(payload.ingredients)
     system_prompt = (
         f"Analyze nutrition for ingredients: {items}. "
@@ -182,44 +149,12 @@ def nutrition(payload: NutritionIn):
         )
         content = resp.choices[0].message.content.strip("` \n")
         if content.startswith("json"): content = content[4:].strip()
+        import json
         return json.loads(content)
     except Exception as e:
         return {"error": str(e)}
 
-
-# ---------- /review -----------
-@app.post("/review")
+@router.post("/review")
 def review(payload: ReviewIn):
-    # Here we’d save to DB; for now, echo back
+    # placeholder: could be saved to DB in community router
     return {"message": "Review submitted ✅", "data": payload.dict()}
-
-
-# ---------- /community-post ----------
-@app.post("/community-post")
-def community_post(payload: CommunityPostIn):
-    # Save to DB later; for now, return mock confirmation
-    return {"message": "Recipe shared with community 🍲", "post": payload.dict()}
-
-app.include_router(community_router)
-
-# ---------- /workshops ----------
-@app.get("/workshops")
-def workshops():
-    return {
-        "workshops": [
-            {
-                "title": "Chettinad Chicken Masterclass",
-                "host": "Chef Anbu",
-                "price": 299,
-                "date": "2025-09-01",
-                "mode": "online",
-            },
-            {
-                "title": "Vegan Smoothie Hacks",
-                "host": "Chef Priya",
-                "price": 199,
-                "date": "2025-09-05",
-                "mode": "offline",
-            },
-        ]
-    }
