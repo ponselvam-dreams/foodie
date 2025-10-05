@@ -1,0 +1,17 @@
+# Use the official Redis image as the base image
+FROM redis:latest
+
+# Create the directory for the log file and set permissions
+RUN mkdir -p /var/log/redis && chown redis:redis /var/log/redis
+
+# Copy custom Redis configuration file if you have one
+COPY database/redis.conf /usr/local/etc/redis/redis.conf
+
+# Expose the default Redis port
+EXPOSE 6379
+
+# Run Redis server with the custom configuration file
+CMD ["redis-server", "/usr/local/etc/redis/redis.conf"]
+
+# If you don't have a custom configuration file, you can simply run Redis
+# CMD ["redis-server"]

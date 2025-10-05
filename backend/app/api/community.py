@@ -2,7 +2,7 @@ from typing import List
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
-from app.db.deps import get_db
+from app.db.database import get_db
 from app.models.community_post import CommunityPost as CommunityPostModel
 
 router = APIRouter(prefix="", tags=["Community"])
@@ -13,6 +13,7 @@ class CommunityPostIn(BaseModel):
     steps: List[str]
     video_url: str | None = None
     author: str
+
 
 @router.post("/community-post")
 def community_post(payload: CommunityPostIn, db: Session = Depends(get_db)):
@@ -27,6 +28,7 @@ def community_post(payload: CommunityPostIn, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(post)
     return {"message": "Recipe shared with community 🍲", "post_id": post.id}
+
 
 @router.get("/community-feed")
 def community_feed(db: Session = Depends(get_db)):

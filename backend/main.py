@@ -3,20 +3,21 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 from app.db.database import Base, engine
-from app.api import core, community, workshops, auth
+from app.api import core, community, workshops, auth, health
 from app import models
+from app.config import settings
 
 # Load env variables
 load_dotenv()
 
 
-app = FastAPI(title="FoodieAI Backend", version="1.1")
+app = FastAPI(title=settings.PROJECT_NAME, version=settings.VERSION)
 
 
 # Enable frontend calls
 app.add_middleware(
 CORSMiddleware,
-allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+allow_origins=settings.CORS_ALLOW_ORIGINS,
 allow_credentials=True,
 allow_methods=["*"],
 allow_headers=["*"],
@@ -32,6 +33,7 @@ app.include_router(core.router)
 app.include_router(community.router)
 app.include_router(workshops.router)
 app.include_router(auth.router)
+app.include_router(health.router)
 
 @app.get("/")
 def root():

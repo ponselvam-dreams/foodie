@@ -1,0 +1,11 @@
+# Use the official Docker Hub PostgreSQL image
+FROM postgres:13
+
+# Set environment variables
+ENV POSTGRES_USER="foodieai_admin"
+ENV POSTGRES_PASSWORD="foodieai2025!"
+ENV POSTGRES_DB="foodieai"
+
+# Add a database initialization script
+ADD database/init.sql /docker-entrypoint-initdb.d/
+
