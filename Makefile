@@ -9,7 +9,7 @@ clean_all:
 run_backend:
 	$(MAKE) run_db
 	$(MAKE) run_redis
-	cd backend && uvicorn main:app --reload
+	cd backend && uvicorn app.main:app --reload
 
 # Frontend (React)
 run_frontend:

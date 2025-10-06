@@ -1,5 +1,5 @@
 import os
-from .version import __version__
+from ..version import __version__
 from enum import Enum
 
 class Config:

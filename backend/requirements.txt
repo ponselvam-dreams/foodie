@@ -10,3 +10,6 @@ pydantic-settings==2.4.0
 passlib[bcrypt]==1.7.4
 email-validator==2.2.0
 psycopg2-binary==2.9.10
+redis==6.4.0
+jwt==1.4.0
+authlib==1.6.5

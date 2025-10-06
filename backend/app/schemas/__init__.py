@@ -1,11 +1,12 @@
 # app/schemas/__init__.py
 
 # import explicit modules (adjust names to your files)
-from .user import UserCreate, UserOut, LoginRequest
+from .user import UserCreate, UserInDB, UserBase, UserUpdate
 
 __all__ = [
     "UserCreate",
-    "UserOut",
-    "LoginRequest",
+    "UserInDB",
+    "UserBase",
+    "UserUpdate",
     # add other exported schema names here
 ]

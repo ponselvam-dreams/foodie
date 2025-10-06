@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 from app.db.database import Base, engine
 from app.api import core, community, workshops, auth, health
 from app import models
-from app.config import settings
+from app.core.config import settings
 
 # Load env variables
 load_dotenv()
