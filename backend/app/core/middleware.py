@@ -1,3 +1,4 @@
+from urllib import request
 from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse
@@ -13,6 +14,12 @@ class APIKeyMiddleware(BaseHTTPMiddleware):
             response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
             response.headers["Access-Control-Allow-Headers"] = "Authorization, Content-Type, x-api-key"
             return response
+        
+        auth_header = request.headers.get("Authorization")
+        if auth_header and auth_header.startswith("Bearer "):
+            token = auth_header.split("Bearer ")[1]
+            if is_valid_access_token(token):  # Implement your token validation
+                return await call_next(request)
 
         if request.url.path in settings.EXCLUDE_PATHS:
             logger.debug(f"Skipping API key check for {request.url.path}")

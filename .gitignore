@@ -61,6 +61,7 @@ env/
 /backend/env/
 /backend/.venv/
 
+*/*.env
 # pyenv
 .python-version
 

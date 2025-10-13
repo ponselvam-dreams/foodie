@@ -17,7 +17,8 @@ from app.db.database import get_db
 from app.core.oauth_config import oauth
 from app.core.authentication import ( 
     check_password, 
-    create_access_token, 
+    create_access_token,
+    create_refresh_token,
     generate_otp, 
     verify_otp,
     log_user_in, 
@@ -65,7 +66,8 @@ async def auth_google_callback(request: Request, db: Session = Depends(get_db)):
     
     # create a session or token for the user
     token = create_access_token(data={"sub": user.email, "role": user.role})
-    return {"message": "Google login successful", "email": email, 'access_token': token, "token_type": "bearer"}
+    refresh_token = create_refresh_token(data={"sub": user.email})
+    return {"message": "Google login successful", "email": email, 'access_token': token,"refresh_token":refresh_token, "token_type": "bearer"}
 
 
 @router.post("/password", response_model=UserTokenData)
@@ -79,7 +81,8 @@ async def authenticate_user(form_data: OAuth2PasswordRequestForm = Depends(), db
             headers={"WWW-Authenticate": "Bearer"},
         )
     token = create_access_token(data={"sub": user.email})
-    return {"message": "Google login successful", "access_token": token, "email": user.email, "token_type": "bearer"}
+    refresh_token = create_refresh_token(data={"sub": user.email})
+    return {"message": "Password login successful", "access_token": token,"refresh_token":refresh_token, "email": user.email, "token_type": "bearer"}
 
 
 @router.post("/register")
@@ -127,12 +130,12 @@ async def verify_otp_route(data: OTPVerificationSchema, request: Request, respon
         # Retrieve user details from Redis
         user_details = get_user_details(data.email)
         if not user_details:
-            raise HTTPException(status_code=400, detail="User details not found in session")
+            raise HTTPException(status_code=400, detail="User details not found in session, try registering again")
         
         # Create a new user after OTP verification
         new_user = UserCreate(**user_details)
-        created_user = create_user(db, **new_user)
-        tokens = log_user_in(created_user.email, created_user.role.value)
+        created_user = create_user(db, **new_user.dict())
+        tokens = log_user_in(created_user.email, created_user.role)
         response.set_cookie(key="access_token", value=tokens["access_token"], httponly=True, secure=True, samesite='Strict')
         response.set_cookie(key="refresh_token", value=tokens["refresh_token"], httponly=True, secure=True, samesite='Strict')
         return tokens

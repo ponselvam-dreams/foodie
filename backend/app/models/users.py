@@ -34,6 +34,9 @@ def get_by_email(db: Session, email: str):
     return db.query(User).filter(User.email == email).first()
 
 def create_user(db: Session, **kwargs):
+    if password := kwargs.pop('password', None):
+        from app.core.authentication import hash_password
+        kwargs['password'] = hash_password(password)
     user = User(**kwargs)
     db.add(user)
     db.commit()

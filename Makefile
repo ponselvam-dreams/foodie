@@ -31,6 +31,18 @@ run_db:
 		fi; \
 	fi
 
+db_init:
+	cd backend && alembic init alembic
+
+db_migration:
+	cd backend && alembic revision --autogenerate -m "Migrated one step"
+
+db_upgrade:
+	cd backend && alembic upgrade head
+
+db_downgrade:
+	cd backend && alembic downgrade -1
+
 # Stop PostgreSQL container
 stop_db:
 	docker stop foodieaipg

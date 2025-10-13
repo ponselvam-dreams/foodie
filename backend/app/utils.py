@@ -4,9 +4,12 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from typing import List
 import logging
+from pydantic import EmailStr
+
 
 from .core.config import settings
-from .core.email_config import fast_mail
+# from .core.email_config import fast_mail
+from app.core.email_config import email_sender
 from fastapi_mail import MessageSchema
 
 if settings.DEBUG:
@@ -60,12 +63,17 @@ def send_email(
         print(f"Failed to send email: {e}")
 
 
-async def send_email_otp(email, otp):
+# async def send_email_otp(email, otp):
 
-    message = MessageSchema(
-        subject="GreenBHP - OTP Verification",
-        recipients=[email],
-        body=f"Your OTP code is {otp}",
-        subtype="plain"
-    )
-    await fast_mail.send_message(message)
+#     message = MessageSchema(
+#         subject="GreenBHP - OTP Verification",
+#         recipients=[email],
+#         body=f"Your OTP code is {otp}",
+#         subtype="plain",
+#         multipart_subtype="alternative",
+#     )
+#     await fast_mail.send_message(message)
+
+
+async def send_email_otp(email, otp):
+    await email_sender.send("FoodieAI - OTP Verification", email, f"Your OTP code is {otp}")
