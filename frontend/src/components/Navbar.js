@@ -21,6 +21,7 @@ export default function Navbar() {
           <Link to="/meal-planner" className="hover:text-green-600">Meal Planner</Link>
           <Link to="/nutrition" className="hover:text-green-600">Nutrition</Link>
           <Link to="/workshops" className="hover:text-green-600">Workshops</Link>
+          <Link to="/blog" className="hover:text-green-600">Blogs</Link>
         </nav>
 
         {/* Auth Buttons */}

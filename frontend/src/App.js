@@ -10,6 +10,8 @@ import Signup from "./pages/Signup";
 import MealPlanner from "./pages/MealPlanner";
 import Nutrition from "./pages/Nutrition";
 import Workshops from "./pages/Workshops";
+import BlogPage from './pages/blog';
+
 
 
 function App() {
@@ -29,6 +31,8 @@ function App() {
             <Route path="/meal-planner" element={<MealPlanner />} />
             <Route path="/nutrition" element={<Nutrition />} />
             <Route path="/workshops" element={<Workshops />} />
+            <Route path="/blog" element={<BlogPage />} />
+
           </Routes>
         </div>
       </div>
