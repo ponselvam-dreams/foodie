@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 
-router = APIRouter()
+router = APIRouter(prefix="", tags=["Health"])
 
 @router.get("/health")
 async def health_check():

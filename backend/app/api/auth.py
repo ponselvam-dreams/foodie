@@ -32,7 +32,7 @@ from app.core.authentication import (
 
 from app.utils import send_email_otp
 
-router = APIRouter()
+router = APIRouter(prefix="", tags=["Auth"])
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/password")
 
