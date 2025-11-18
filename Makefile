@@ -11,6 +11,20 @@ run_backend:
 	$(MAKE) run_redis
 	cd backend && uvicorn app.main:app --reload
 
+# install_backend_deps:
+# 	@PY=python3; if ! command -v $$PY >/dev/null 2>&1; then PY=python; fi; \
+# 	if [ ! -d backend/.venv ]; then \
+# 		$$PY -m venv backend/.venv; \
+# 		echo "Created virtualenv at backend/.venv"; \
+# 	fi; \
+# 	source backend/.venv/bin/activate; \
+# 	pip install --upgrade pip setuptools wheel; \
+# 	if [ -f backend/requirements.txt ]; then \
+# 		pip install -r backend/requirements.txt; \
+# 	else \
+# 		echo "No backend/requirements.txt found."; \
+# 	fi
+
 # Frontend (React)
 run_frontend:
 	cd frontend && npm start

@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from app.db.database import Base, engine
-from app.api import core, community, workshops, auth, health
+from app.api import core, community, workshops, auth, health, user
 from app.core.config import settings
 from app.core.middleware import APIKeyMiddleware
 
@@ -36,6 +36,7 @@ app.include_router(community.router)
 app.include_router(workshops.router)
 app.include_router(auth.router)
 app.include_router(health.router)
+app.include_router(user.router)
 
 # @app.get("/")
 # def root():
