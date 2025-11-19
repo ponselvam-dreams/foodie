@@ -1,5 +1,6 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, ConfigDict
 from typing import Optional
+from datetime import datetime
 from enum import Enum
 
 # class UserCreate(BaseModel):
@@ -43,7 +44,7 @@ class UserBase(BaseModel):
     role: UserRole 
     is_active: bool = True
     is_admin: bool = False
-    created_at: Optional[str] = None
+    created_at: Optional[datetime] = None
 
 
 class UserCreate(UserBase):

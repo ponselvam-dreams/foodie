@@ -17,11 +17,14 @@ class DevelopmentConfig(Config):
     POSTGRES_DATABASE_URL = "postgresql+psycopg2://foodieai_admin:foodieai2025!@localhost:5432/foodieai"
     CORS_ALLOW_ORIGINS = ["http://localhost:3000", "http://127.0.0.1:3000"]
 
-    EXCLUDE_PATHS = ['/health','/docs','/openapi.json','/redoc']
+    EXCLUDE_PATHS = ['/health','/docs','/openapi.json','/redoc','/api/v1/auth/google','/api/v1/auth/google/callback']
 
     OTP_TTL = 300  # OTP time-to-live in seconds (5 minutes)
     ACCESS_TOKEN_EXPIRE_MINUTES = 60  # 1 hour
-    REFRESH_TOKEN_EXPIRE_DAYS = 60 * 24 * 7  # 7 days
+    # Number of days a refresh token is valid. Previously this was set to
+    # 60 * 24 * 7 which accidentally treated 'days' as minutes*hours*days
+    # resulting in ~10k days (~27 years). Set to 7 for a 7-day expiry.
+    REFRESH_TOKEN_EXPIRE_DAYS = 7  # 7 days
 
     # Redis configuration
     REDIS_HOST: str = "localhost"

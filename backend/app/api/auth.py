@@ -45,14 +45,28 @@ async def login_google(request: Request):
     return await oauth.google.authorize_redirect(request, redirect_uri)
 
 
-@router.get('/google/callback', response_model=UserTokenData)
+@router.get('/google/callback')
 async def auth_google_callback(request: Request, db: Session = Depends(get_db), force: bool = False):
-
     try:
         token = await oauth.google.authorize_access_token(request)
     except OAuthError as e:
-        raise HTTPException(status_code=400, detail="Google Auth failed")
-    
+        # include error info in logs to help debug redirect/config issues
+        try:
+            import traceback, sys
+            logger = None
+            try:
+                from app.utils import logger as _logger
+                logger = _logger
+            except Exception:
+                logger = None
+            if logger:
+                logger.error(f"Google authorize_access_token failed: {e}")
+                logger.error(traceback.format_exc())
+        except Exception:
+            pass
+        # return a small HTML page to surface the error to the browser
+        return Response(content=f"<html><body><h3>Google Auth failed</h3><pre>{str(e)}</pre></body></html>", media_type="text/html", status_code=400)
+
     user = token.get('userinfo') or {}
     first_name = user.get('given_name')
     last_name = user.get('family_name')
@@ -74,9 +88,38 @@ async def auth_google_callback(request: Request, db: Session = Depends(get_db), 
     if existing and not force:
         raise HTTPException(status_code=409, detail={"message": "Active session exists", "sessions": existing})
 
-    # create a session (stores tokens in redis) and return tokens
+        # create a session (stores tokens in redis) and return tokens
     tokens = await create_and_store_session(user_id=user.email, role=user.role)
-    return {"message": "Google login successful", "email": email, 'access_token': tokens["access_token"], "refresh_token": tokens["refresh_token"], "token_type": "bearer"}
+
+    # For browser-based flows (popup), return a small HTML page that posts tokens to window.opener
+    # The frontend popup should listen for a postMessage to receive tokens.
+    # Embed tokens inside a <script type="application/json"> block to avoid
+    # creating syntax errors when token strings contain characters that would
+    # break inline JS. The popup script will read and parse the JSON safely.
+    tokens_json = json.dumps({"access_token": tokens["access_token"], "refresh_token": tokens["refresh_token"], "email": email, "token_type": "bearer"})
+    html = f"""<!doctype html>
+            <html>
+            <body>
+                <script id="oauth_tokens" type="application/json">{tokens_json}</script>
+                <script>
+                    try {{
+                        var tokens = JSON.parse(document.getElementById('oauth_tokens').textContent);
+                        // postMessage to opener (frontend) and then close popup
+                        if (window.opener) {{
+                            window.opener.postMessage({{type: 'oauth_tokens', tokens: tokens}}, window.opener.location.origin);
+                            setTimeout(function(){{ window.close(); }}, 500);
+                        }} else {{
+                            // fallback: print tokens
+                            document.body.innerText = 'Login successful. You can close this window.' + JSON.stringify(tokens);
+                        }}
+                    }} catch (err) {{
+                        document.body.innerText = 'Login successful, but failed to send tokens to opener: ' + err;
+                    }}
+                </script>
+            </body>
+            </html>"""
+
+    return Response(content=html, media_type="text/html")
 
 
 @router.post("/password", response_model=UserTokenData)

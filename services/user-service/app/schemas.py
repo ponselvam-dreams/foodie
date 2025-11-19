@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, ConfigDict
 from typing import Optional
 from enum import Enum
 
@@ -26,9 +26,7 @@ class UserCreate(UserBase):
 
 class UserOut(UserBase):
     id: int
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class UserVerify(BaseModel):
@@ -53,6 +51,4 @@ class UserProfileCreate(UserProfileBase):
 class UserProfileOut(UserProfileBase):
     id: int
     user_id: int
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)

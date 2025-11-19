@@ -333,6 +333,16 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
     """
     FastAPI dependency: returns payload available in redis for the access token
     """
-    return await _verify_token_and_get_payload(token)
+    payload = await _verify_token_and_get_payload(token)
+    # normalize payload for downstream handlers: include an `email` key
+    # mapped from the JWT `sub` claim (common expectation across handlers)
+    try:
+        if isinstance(payload, dict):
+            if "email" not in payload and "sub" in payload:
+                payload["email"] = payload.get("sub")
+    except Exception:
+        # best-effort normalization; do not fail auth if mapping cannot be applied
+        pass
+    return payload
 
 
